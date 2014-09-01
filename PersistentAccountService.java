@@ -1,16 +1,16 @@
 import java.sql.*;
+import org.postgresql.ds.PGPoolingDataSource;
 
 public class PersistentAccountService implements AccountService {
-    Connection connection = null;
+    PGPoolingDataSource source;
 
     public PersistentAccountService() throws Exception {
-        Class.forName("org.postgresql.Driver");
-        connection = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/kokocashable","kokouser", "qwerty");
-    }
-
-    public void close() throws SQLException {
-        connection.close();
+        source = new PGPoolingDataSource();
+        source.setServerName("localhost");
+        source.setDatabaseName("kokocashable");
+        source.setUser("kokouser");
+        source.setPassword("qwerty");
+        source.setMaxConnections(10);
     }
 
     @Override
@@ -18,17 +18,25 @@ public class PersistentAccountService implements AccountService {
         Statement stmt = null;
         String query = "SELECT amount FROM kokoaccounts WHERE id = " + id;
 
-        Long amount = 0L; 
-        stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            Long amount = 0L; 
+            stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
 
-        while (rs.next()) {
-            amount = Long.valueOf(rs.getInt("amount"));
+            while (rs.next()) {
+                amount = Long.valueOf(rs.getInt("amount"));
+            }
+
+            if (stmt != null) stmt.close();
+
+            return amount;
+        } finally {
+            if (connection != null) {
+                try { connection.close(); } catch (SQLException e) {}
+            }
         }
-
-        if (stmt != null) stmt.close();
-
-        return amount;
     }
 
     @Override
@@ -42,11 +50,20 @@ public class PersistentAccountService implements AccountService {
         Statement stmt = null;
         String query = "SELECT amount FROM kokoaccounts WHERE id = " + id;
 
-        stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
-        boolean hasNext = rs.next();
-        if (stmt != null) stmt.close();
-        return hasNext;
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            boolean hasNext = rs.next();
+            if (stmt != null) stmt.close();
+            return hasNext;
+
+        } finally {
+            if (connection != null) {
+                try { connection.close(); } catch (SQLException e) {}
+            }
+        }
     }
 
     void createAccount(Integer id) throws SQLException {
@@ -54,9 +71,18 @@ public class PersistentAccountService implements AccountService {
         String query = "INSERT INTO kokoaccounts (id, amount)"
                      + "VALUES (" + id + ", 0)";
 
-        stmt = connection.createStatement();
-        stmt.execute(query);
-        if (stmt != null) stmt.close();
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            stmt = connection.createStatement();
+            stmt.execute(query);
+            if (stmt != null) stmt.close();
+
+        } finally {
+            if (connection != null) {
+                try { connection.close(); } catch (SQLException e) {}
+            }
+        }
     }
 
     void addAmountForExistingId(Integer id, Long value) throws SQLException {
@@ -64,10 +90,19 @@ public class PersistentAccountService implements AccountService {
         String query = "UPDATE kokoaccounts SET amount = amount + " + value
                     + " WHERE id = " + id;
 
-        Long amount = 0L; 
-        stmt = connection.createStatement();
-        stmt.executeUpdate(query);
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            Long amount = 0L; 
+            stmt = connection.createStatement();
+            stmt.executeUpdate(query);
 
-        if (stmt != null) stmt.close();
+            if (stmt != null) stmt.close();
+
+        } finally {
+            if (connection != null) {
+                try { connection.close(); } catch (SQLException e) {}
+            }
+        }
     }
 }
