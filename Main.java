@@ -3,8 +3,10 @@ public class Main {
         System.out.println("Starting AZAZAZ...\n");
 
         Integer id = 1488;
-        AccountService as = new PersistentAccountService();
+        PersistentAccountService as = new PersistentAccountService();
         Long amount = as.getAmount(id);
         System.out.println("amount = " + amount);
+
+        as.close();
     }
 }

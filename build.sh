@@ -2,5 +2,5 @@
 
 set -e
 
-javac *.java
-java Main
+javac -classpath postgresql-jdbc3.jar *.java 
+java -classpath .:postgresql-jdbc3.jar Main
