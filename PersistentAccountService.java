@@ -24,32 +24,76 @@ public class PersistentAccountService implements AccountService {
     @Override
     public Long getAmount(Integer id) {
         Statement stmt = null;
-        String query = "select amount from kokoaccounts where id = " + id;
+        String query = "SELECT amount FROM kokoaccounts WHERE id = " + id;
 
         Long amount = 0L; 
-        //"select COF_NAME, SUP_ID, PRICE, " + "SALES, TOTAL " + "from " + dbName + ".COFFEES";
         try {
             stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
             while (rs.next()) {
                 amount = Long.valueOf(rs.getInt("amount"));
-
-                //String coffeeName = rs.getString("COF_NAME");
-                //int supplierID = rs.getInt("SUP_ID");
             }
-            
-            if (stmt != null) { stmt.close(); }
+
+            if (stmt != null) stmt.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
         }
         return amount;
-
     }
 
     @Override
     public void addAmount(Integer id, Long value) {
+        if (!idExists(id))
+            createAccount(id);
+        addAmountForExistingId(id, value);
+    }
+
+    boolean idExists(Integer id) {
+        Statement stmt = null;
+        String query = "SELECT amount FROM kokoaccounts WHERE id = " + id;
+
+        try {
+            stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            boolean hasNext = rs.next();
+            if (stmt != null) stmt.close();
+            return hasNext;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    void createAccount(Integer id) {
+        Statement stmt = null;
+        String query = "INSERT INTO kokoaccounts (id, amount)"
+                     + "VALUES (" + id + ", 0)";
+
+        try {
+            stmt = connection.createStatement();
+            stmt.execute(query);
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void addAmountForExistingId(Integer id, Long value) {
+        Statement stmt = null;
+        String query = "UPDATE kokoaccounts SET amount = amount + " + value
+                    + " WHERE id = " + id;
+
+        Long amount = 0L; 
+        try {
+            stmt = connection.createStatement();
+            stmt.executeUpdate(query);
+            
+            if (stmt != null) stmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
