@@ -10,7 +10,7 @@ public class HTTPServer {
     public static void start(AccountService as) {
         try { 
             HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
-            server.createContext("/amounts", new AmountsHandler(as));
+            server.createContext("/accounts", new AmountsHandler(as));
             server.setExecutor(null); // creates a default executor
             server.start();
         } catch (Exception e) {

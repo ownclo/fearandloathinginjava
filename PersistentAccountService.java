@@ -1,5 +1,7 @@
 import java.sql.*;
 import org.postgresql.ds.PGPoolingDataSource;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PersistentAccountService implements AccountService {
     PGPoolingDataSource source;
@@ -38,6 +40,34 @@ public class PersistentAccountService implements AccountService {
             }
         }
     }
+
+    public Map<Integer,Long> getAllAccounts() throws SQLException {
+        Statement stmt = null;
+        String query = "SELECT * FROM kokoaccounts";
+        Map<Integer,Long> allAccounts = new HashMap<Integer,Long>();
+
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                Integer id = Integer.valueOf(rs.getInt("id"));
+                Long amount = Long.valueOf(rs.getInt("amount"));
+                allAccounts.put(id, amount);
+            }
+
+            if (stmt != null) stmt.close();
+
+            return allAccounts;
+        } finally {
+            if (connection != null) {
+                try { connection.close(); } catch (SQLException e) {}
+            }
+        }
+    }
+
 
     @Override
     public void addAmount(Integer id, Long value) throws SQLException {
