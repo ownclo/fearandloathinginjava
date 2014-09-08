@@ -7,8 +7,8 @@ DESCRIPTION
 This is a simple Account Service that supports two main
 operations:
 
-    * `getAmount(id)` returns an amount value for given id;
-    * `addAmount(id, value)` increment amount value by provided one.
+* `getAmount(id)` returns an amount value for given id;
+* `addAmount(id, value)` increment amount value by provided one.
 
 Those methods are provided via RESTful API. All data is cached in RAM,
 as well as persistently stored in Postgres DB. That caching schema
@@ -41,9 +41,9 @@ REST API
 
 The following schema is used:
 
-    * `GET /accounts/:Id` returns the amount for provided ID
-    * `POST /accounts/:Id :Value` (value provided in the body of the request)
-        adds the value to the account for the pointed id.
-    * `GET /accounts/statistics/addamount` returns JSON-formatted stats for `addAmount`
-    * `GET /accounts/statistics/getamount` returns JSON-formatted stats for `getAmount`
-    * `POST /accounts/resetstats` will, evidently, reset the stats.
+* `GET /accounts/:Id` returns the amount for provided ID
+* `POST /accounts/:Id :Value` (value provided in the body of the request)
+    adds the value to the account for the pointed id.
+* `GET /accounts/statistics/addamount` returns JSON-formatted stats for `addAmount`
+* `GET /accounts/statistics/getamount` returns JSON-formatted stats for `getAmount`
+* `POST /accounts/resetstats` will, evidently, reset the stats.
