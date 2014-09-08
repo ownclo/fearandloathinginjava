@@ -8,6 +8,8 @@ import com.sun.net.httpserver.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
+import org.json.simple.JSONObject;
+
 public class HTTPServer {
     final AccountService as;
     final HttpServer server;
@@ -41,15 +43,24 @@ public class HTTPServer {
     static class StatsSuite {
         public TimedCounter addAmountCounter;
         public TimedCounter getAmountCounter;
+        public TimedCounter momentumAddCounter;
+        public TimedCounter momentumGetCounter;
 
         public StatsSuite() {
             addAmountCounter = new TimedCounter();
             getAmountCounter = new TimedCounter();
+
+            // counters that resets after every /stats request.
+            momentumGetCounter = new TimedCounter();
+            momentumAddCounter = new TimedCounter();
         }
 
         public void start() {
             addAmountCounter.start();
             getAmountCounter.start();
+
+            momentumGetCounter.start();
+            momentumAddCounter.start();
         }
 
         public void reset() {
@@ -57,6 +68,9 @@ public class HTTPServer {
             // uber-strict stats are not required.
             addAmountCounter.reset();
             getAmountCounter.reset();
+
+            momentumGetCounter.reset();
+            momentumAddCounter.reset();
         }
     }
 
@@ -97,16 +111,33 @@ public class HTTPServer {
                 if (uriPieces[3].equals("getamount")) {
                     int totalCalls = statsSuite.getAmountCounter.getCounter();
                     float callRate = statsSuite.getAmountCounter.ticksPerSecond();
-                    response = "" + totalCalls + "; " + callRate;
+                    float momentumRate = statsSuite.momentumGetCounter.ticksPerSecond();
+                    statsSuite.momentumGetCounter.reset();
+
+                    JSONObject respJSON = new JSONObject();
+                    respJSON.put("totalCalls", totalCalls);
+                    respJSON.put("callsPerSecond", callRate);
+                    respJSON.put("callsPerSecondSinceLastStatsView", momentumRate);
+                    response = respJSON.toString();
+
                 } else if (uriPieces[3].equals("addamount")) {
                     int totalCalls = statsSuite.addAmountCounter.getCounter();
                     float callRate = statsSuite.addAmountCounter.ticksPerSecond();
-                    response = "" + totalCalls + "; " + callRate;
+                    float momentumRate = statsSuite.momentumAddCounter.ticksPerSecond();
+                    statsSuite.momentumAddCounter.reset();
+
+                    JSONObject respJSON = new JSONObject();
+                    respJSON.put("totalCalls", totalCalls);
+                    respJSON.put("callsPerSecond", callRate);
+                    respJSON.put("callsPerSecondSinceLastStatsView", momentumRate);
+                    response = respJSON.toString();
                 }
+
             } else { /* /accounts/:ID */
                 Integer id = getIdFromURI(uriPieces);
                 response = accountService.getAmount(id).toString();
                 statsSuite.getAmountCounter.tick();
+                statsSuite.momentumGetCounter.tick();
             }
             return response;
         }
@@ -123,6 +154,7 @@ public class HTTPServer {
 
                 accountService.addAmount(id, amount);
                 statsSuite.addAmountCounter.tick();
+                statsSuite.momentumAddCounter.tick();
             }
             return response;
         }

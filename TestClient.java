@@ -70,7 +70,7 @@ public class TestClient {
         while (true) {
             Integer id = randInt(idMin, idMax);
             Long amount = as.getAmount(id);
-            System.out.println("Amount for Id #" + id + " is " + amount);
+            //System.out.println("Amount for Id #" + id + " is " + amount);
         }
     }
 
@@ -85,7 +85,7 @@ public class TestClient {
         while (true) {
             Integer id = randInt(idMin, idMax);
             as.addAmount(id, value);
-            System.out.println("Added " + value + " ubercoins for account #" + id);
+            //System.out.println("Added " + value + " ubercoins for account #" + id);
         }
     }
 
