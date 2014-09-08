@@ -5,13 +5,17 @@ import java.net.InetSocketAddress;
 import java.net.*;
 import com.sun.net.httpserver.*;
 
-public class HTTPServer {
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
-    public static void start(AccountService as) {
+public class HTTPServer {
+    public static void start(AccountService as, int nThreads) {
         try { 
             HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+            ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+
             server.createContext("/accounts", new AmountsHandler(as));
-            server.setExecutor(null); // creates a default executor
+            server.setExecutor(executor); // creates a default executor
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

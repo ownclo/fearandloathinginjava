@@ -6,7 +6,8 @@ public class Main {
             //AccountService as = new PersistentAccountService();
             //AccountService as = new CachingAccountService();
             AccountService as = new CachingPersistentAccountService();
-            HTTPServer.start(as);
+            int nThreads = 10;
+            HTTPServer.start(as, nThreads);
         } catch(Exception e) {
             e.printStackTrace();
         }
