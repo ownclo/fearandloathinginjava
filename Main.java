@@ -7,7 +7,10 @@ public class Main {
             //AccountService as = new CachingAccountService();
             AccountService as = new CachingPersistentAccountService();
             int nThreads = 10;
-            HTTPServer.start(as, nThreads);
+            int PORT = 8000;
+
+            new HTTPServer(as, nThreads, PORT).start();
+
         } catch(Exception e) {
             e.printStackTrace();
         }
